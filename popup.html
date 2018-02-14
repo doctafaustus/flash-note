@@ -1,0 +1,125 @@
+<!doctype html>
+<!--
+ This page is shown when the extension button is clicked, because the
+ "browser_action" field in manifest.json contains the "default_popup" key with
+ value "popup.html".
+ -->
+<html>
+<head>
+  <title>List Extension</title>
+  <style>
+    body {
+      box-sizing: border-box;
+      padding: 15px;
+      margin: 0;
+      font-family: sans-serif, Arial;
+      width: 600px;
+      height: 500px;
+    }
+    #main-left {
+      float: left;
+      margin-right: 10px;
+      width: 165px;
+    }
+    #main-right {
+      float: right;
+      width: 388px;
+    }
+    
+    #menu {
+      font-size: 15px;
+    }
+    #delete-note {
+      float: right;
+    }
+    #delete-note svg {
+      width: 18px;
+      height: 18px;
+      cursor: pointer;
+      position: relative;
+      top: 6px;
+    }
+    #new-note {
+      color: #229a27;
+      margin-bottom: 21px;
+      cursor: pointer;
+      font-weight: bold;
+      margin-top: 4px;
+    }
+    #new-note:hover {
+      color: #225f9a;
+    }
+    #note-list {
+      list-style-type: none;
+      padding: 0;
+      margin: 0;
+      height: 427px;
+      overflow-y: scroll;
+    }
+    #note-list li {
+      padding: 4px 0;
+      cursor: pointer;
+      border-top: solid 1px #cccccc9c;
+    }
+    #note-list li:hover {
+      background-color: #f2f2f2a6;
+    }
+    #title-editor {
+      float: left;
+      height: 22px;
+      width: 355px;
+      padding-left: 6px;
+      border: 0;
+      border-bottom: solid 1px #cccccc;
+      outline: none;
+      font-weight: bold;
+      font-size: 15px;
+      outline: 0;
+    }
+    #note-editor {
+      border: solid 1px #cccccc;
+      clear: both;
+      margin-top: 17px;
+      width: 100%;
+      height: 433px;
+      box-sizing: border-box;
+      padding: 8px;
+      outline: 0;
+      font-size: 14px;
+      line-height: 19px;
+    }
+    
+  </style>
+
+    <!--
+      - JavaScript and HTML must be in separate files: see our Content Security
+      - Policy documentation[1] for details and explanation.
+      -
+      - [1]: https://developer.chrome.com/extensions/contentSecurityPolicy
+     -->
+    <script src="popup.js"></script>
+  </head>
+  <body>
+    
+    <div id="main-left">
+      
+      <div id="menu">
+        <div id="new-note">New Note</div>
+        <ul id="note-list"></ul>
+      </div>
+    </div>
+    
+    <div id="main-right">
+      
+      <input id="title-editor" type="text" placeholder="Title">
+      <div id="delete-note">
+        <svg viewBox="0 0 32 32">
+          <polygon points="24.485,27.314 27.314,24.485 18.828,16 27.314,7.515 24.485,4.686 16,13.172 7.515,4.686 4.686,7.515 13.172,16 4.686,24.485 7.515,27.314 16,18.828 "></polygon>
+        </svg>
+      </div>
+      <textarea id="note-editor"></textarea>
+    </div>
+    
+  </body>
+</html>
+
