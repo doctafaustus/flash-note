@@ -32,6 +32,9 @@
     #delete-note {
       float: right;
     }
+    #delete-note.disabled {
+      visibility: hidden;
+    }
     #delete-note svg {
       width: 18px;
       height: 18px;
@@ -39,15 +42,16 @@
       position: relative;
       top: 6px;
     }
+
     #new-note {
-      color: #229a27;
+      color: #225f9a;;
       margin-bottom: 21px;
       cursor: pointer;
       font-weight: bold;
       margin-top: 4px;
     }
     #new-note:hover {
-      color: #225f9a;
+      color: black;
     }
     #note-list {
       list-style-type: none;
@@ -76,6 +80,10 @@
       font-size: 15px;
       outline: 0;
     }
+    #title-editor.disabled {
+      visibility: hidden;
+      cursor: default;
+    }
     #note-editor {
       border: solid 1px #cccccc;
       clear: both;
@@ -88,7 +96,10 @@
       font-size: 14px;
       line-height: 19px;
     }
-    
+    #note-editor.disabled {
+      background-color: #e2e2e2;
+      cursor: default;
+    }
   </style>
 
     <!--
