@@ -7,7 +7,6 @@ Remove spellcheck
 
 */
 
-
 var notes;
 var currentNote;
 
