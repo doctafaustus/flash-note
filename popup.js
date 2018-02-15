@@ -1,12 +1,3 @@
-/* TO DO
-
-Disable on note delete
-Trash icon
-Remove spellcheck
-
-
-*/
-
 var notes;
 var currentNote;
 
@@ -65,7 +56,10 @@ function init() {
     document.querySelector('#title-editor').value = '';
     document.querySelector('#note-editor').value = '';
 
-    chrome.storage.sync.set({notes}, function() {console.log('Note deleted!')});
+    chrome.storage.sync.set({notes}, function() {
+      console.log('Note deleted!');
+      disableEditor();
+    });
 
   });
 
@@ -114,6 +108,7 @@ function init() {
 
     chrome.storage.sync.set({currentNote}, function() {
       console.log('Current note saved!');
+      enableEditor();
     });
 
   }, true);
