@@ -92,7 +92,9 @@ function init() {
 
   }, 200);
   var noteEditor = document.querySelector('#note-editor');
-  noteEditor.addEventListener('keyup', noteText_cb);
+  ['click', 'paste'].forEach((event) => {
+    noteEditor.addEventListener(event, noteText_cb);
+  });
 
 
   // Change notes
