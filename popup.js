@@ -39,7 +39,13 @@ function init() {
     chrome.storage.sync.set({notes}, function() {
       console.log('New note added!');
       populateNotes();
+
+      chrome.storage.sync.set({currentNote}, function() {
+        console.log('Current note saved!');
+      });
     });
+
+
   });
 
 
