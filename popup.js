@@ -51,7 +51,14 @@ function init() {
 
   // Delete note
   document.querySelector('#delete-note').addEventListener('click', function() {
-    var noteIdToDelete = getCurrentNoteObj().noteNum;
+
+    var noteToDelete = getCurrentNoteObj();
+    var noteIdToDelete = noteToDelete.noteNum;
+    var noteTitleToDelete = noteToDelete.title;
+
+    var confirmDelete = window.confirm('Are you sure you want to delete ' + noteTitleToDelete + '?');
+
+    if (!confirmDelete) return;
     
     notes = notes.filter(function(note) {
       return note.noteNum !== noteIdToDelete;
@@ -72,8 +79,7 @@ function init() {
 
   // Save note title
   var titleEditor = document.querySelector('#title-editor');
-  var title_cb = debounce(function() {
-
+  titleEditor.addEventListener('blur', function() {
     var note = getCurrentNoteObj();
     note.title = titleEditor.value;
     populateNotes();
@@ -82,24 +88,18 @@ function init() {
       console.log('Note title saved!');
     });
 
-  }, 200);
-  titleEditor.addEventListener('keyup', title_cb);
+  });
 
 
   // Save note text
-  var noteText_cb = debounce(function() {
-
+  var noteEditor = document.querySelector('#note-editor');
+  noteEditor.addEventListener('blur', function() {
     var note = getCurrentNoteObj();
     note.noteText = noteEditor.value;
 
     chrome.storage.sync.set({notes}, function() {
       console.log('Note text saved!');
     });
-
-  }, 200);
-  var noteEditor = document.querySelector('#note-editor');
-  ['click', 'paste'].forEach((event) => {
-    noteEditor.addEventListener(event, noteText_cb);
   });
 
 
