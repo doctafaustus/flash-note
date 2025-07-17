@@ -1,141 +1,163 @@
-var notes;
-var currentNote;
+let notes;
+let currentNote;
 
-chrome.storage.sync.get('notes', function(noteObj) {
-  notes = noteObj.notes || [];
+async function loadData() {
+  try {
+    const noteObj = await chrome.storage.sync.get('notes');
+    notes = noteObj.notes || [];
 
-  chrome.storage.sync.get('currentNote', function(cn_Obj) {
+    const cn_Obj = await chrome.storage.sync.get('currentNote');
     currentNote = cn_Obj.currentNote || 0;
+
     init();
-  });
-});
+  } catch (error) {
+    console.error('Error loading data:', error);
+  }
+}
+
+loadData();
 
 function init() {
-
   populateNotes();
 
-
   // New note
-  document.querySelector('#new-note').addEventListener('click', function() {
-    
-    var newNoteID = parseInt(Math.random() * 1000000);
-    currentNote = newNoteID;
-    
-    var newli = document.createElement('li');
-    newli.innerText = 'New Note';
-    
-    newli.setAttribute('data-note-num', newNoteID);
-    document.querySelector('#note-list').appendChild(newli);
-    
-    document.querySelector('#title-editor').value = '';
-    document.querySelector('#note-editor').value = '';
+  document
+    .querySelector('#new-note')
+    .addEventListener('click', async function () {
+      const newNoteID = parseInt(Math.random() * 1000000);
+      currentNote = newNoteID;
 
-    notes.push({
-      noteNum: newNoteID,
-      title: 'New Note',
-      noteText: '',
-    });
+      const newli = document.createElement('li');
+      newli.innerText = 'New Note';
 
-    chrome.storage.sync.set({notes}, function() {
-      console.log('New note added!');
-      populateNotes();
+      newli.setAttribute('data-note-num', newNoteID);
+      document.querySelector('#note-list').appendChild(newli);
 
-      chrome.storage.sync.set({currentNote}, function() {
-        console.log('Current note saved!');
+      document.querySelector('#title-editor').value = '';
+      document.querySelector('#note-editor').value = '';
+
+      notes.push({
+        noteNum: newNoteID,
+        title: 'New Note',
+        noteText: '',
       });
+
+      try {
+        await chrome.storage.sync.set({ notes });
+        console.log('New note added!');
+        populateNotes();
+
+        await chrome.storage.sync.set({ currentNote });
+        console.log('Current note saved!');
+      } catch (error) {
+        console.error('Error saving new note:', error);
+      }
     });
-
-
-  });
-
 
   // Delete note
-  document.querySelector('#delete-note').addEventListener('click', function() {
+  document
+    .querySelector('#delete-note')
+    .addEventListener('click', async function () {
+      const noteToDelete = getCurrentNoteObj();
+      if (!noteToDelete) return;
 
-    var noteToDelete = getCurrentNoteObj();
-    var noteIdToDelete = noteToDelete.noteNum;
-    var noteTitleToDelete = noteToDelete.title;
+      const noteIdToDelete = noteToDelete.noteNum;
+      const noteTitleToDelete = noteToDelete.title;
 
-    var confirmDelete = window.confirm('Are you sure you want to delete ' + noteTitleToDelete + '?');
+      const confirmDelete = window.confirm(
+        'Are you sure you want to delete ' + noteTitleToDelete + '?'
+      );
+      if (!confirmDelete) return;
 
-    if (!confirmDelete) return;
-    
-    notes = notes.filter(function(note) {
-      return note.noteNum !== noteIdToDelete;
+      notes = notes.filter(function (note) {
+        return note.noteNum !== noteIdToDelete;
+      });
+
+      populateNotes();
+
+      document.querySelector('#title-editor').value = '';
+      document.querySelector('#note-editor').value = '';
+
+      try {
+        await chrome.storage.sync.set({ notes });
+        console.log('Note deleted!');
+        disableEditor();
+      } catch (error) {
+        console.error('Error deleting note:', error);
+      }
     });
-    
-    populateNotes();
-    
-    document.querySelector('#title-editor').value = '';
-    document.querySelector('#note-editor').value = '';
-
-    chrome.storage.sync.set({notes}, function() {
-      console.log('Note deleted!');
-      disableEditor();
-    });
-
-  });
-
 
   // Save note title
-  var titleEditor = document.querySelector('#title-editor');
-  titleEditor.addEventListener('blur', function() {
-    var note = getCurrentNoteObj();
+  const titleEditor = document.querySelector('#title-editor');
+  titleEditor.addEventListener('blur', async function () {
+    const note = getCurrentNoteObj();
+    if (!note) return;
+
     note.title = titleEditor.value;
     populateNotes();
 
-    chrome.storage.sync.set({notes}, function() {
+    try {
+      await chrome.storage.sync.set({ notes });
       console.log('Note title saved!');
-    });
-
+    } catch (error) {
+      console.error('Error saving note title:', error);
+    }
   });
-
 
   // Save note text
-  var noteEditor = document.querySelector('#note-editor');
-  noteEditor.addEventListener('blur', function() {
-    var note = getCurrentNoteObj();
+  const noteEditor = document.querySelector('#note-editor');
+  noteEditor.addEventListener('blur', async function () {
+    const note = getCurrentNoteObj();
+    if (!note) return;
+
     note.noteText = noteEditor.value;
 
-    chrome.storage.sync.set({notes}, function() {
+    try {
+      await chrome.storage.sync.set({ notes });
       console.log('Note text saved!');
-    });
+    } catch (error) {
+      console.error('Error saving note text:', error);
+    }
   });
 
-
   // Change notes
-  document.querySelector('#note-list').addEventListener('click', function(e) {
-    if (e.target.tagName !== 'LI') return;
-    
-    currentNote = Number(e.target.getAttribute('data-note-num'));
-    
-    var note = getCurrentNoteObj();
-    
-    document.querySelector('#title-editor').value = note.title;
-    document.querySelector('#note-editor').value = note.noteText;
+  document.querySelector('#note-list').addEventListener(
+    'click',
+    async function (e) {
+      if (e.target.tagName !== 'LI') return;
 
-    chrome.storage.sync.set({currentNote}, function() {
-      console.log('Current note saved!');
-      enableEditor();
-    });
+      currentNote = Number(e.target.getAttribute('data-note-num'));
 
-  }, true);
+      const note = getCurrentNoteObj();
+      if (!note) return;
+
+      document.querySelector('#title-editor').value = note.title;
+      document.querySelector('#note-editor').value = note.noteText;
+
+      try {
+        await chrome.storage.sync.set({ currentNote });
+        console.log('Current note saved!');
+        enableEditor();
+      } catch (error) {
+        console.error('Error saving current note:', error);
+      }
+    },
+    true
+  );
 
   // Trigger click on current note
-  var lastClickedNote = document.querySelector('[data-note-num="' + currentNote + '"]');
+  const lastClickedNote = document.querySelector(
+    '[data-note-num="' + currentNote + '"]'
+  );
   if (lastClickedNote) {
-    lastClickedNote.dispatchEvent(new Event('click')); 
+    lastClickedNote.dispatchEvent(new Event('click'));
   }
-
-
-
 }
-
 
 function populateNotes() {
   document.querySelector('#note-list').innerHTML = '';
-  notes.forEach(function(note) {
-    var li = document.createElement('li');
+  notes.forEach(function (note) {
+    const li = document.createElement('li');
     li.innerText = note.title;
     li.setAttribute('data-note-num', note.noteNum);
     document.querySelector('#note-list').appendChild(li);
@@ -149,39 +171,43 @@ function populateNotes() {
 }
 
 function getCurrentNoteObj() {
-  return notes.find(function(note) {
+  return notes.find(function (note) {
     return note.noteNum === currentNote;
   });
 }
 
 function disableEditor() {
-  var noteEditor = document.querySelector('#note-editor');
+  const noteEditor = document.querySelector('#note-editor');
   noteEditor.classList.add('disabled');
   noteEditor.setAttribute('disabled', true);
-  Array.from(document.querySelectorAll('#title-editor, #delete-note')).forEach(function(el) {
-    el.classList.add('disabled');
-  });
+  Array.from(document.querySelectorAll('#title-editor, #delete-note')).forEach(
+    function (el) {
+      el.classList.add('disabled');
+    }
+  );
 }
 
 function enableEditor() {
-  var noteEditor = document.querySelector('#note-editor');
+  const noteEditor = document.querySelector('#note-editor');
   noteEditor.classList.remove('disabled');
-  noteEditor.removeAttribute('disabled', false);
-  Array.from(document.querySelectorAll('#title-editor, #delete-note')).forEach(function(el) {
-    el.classList.remove('disabled');
-  });
+  noteEditor.removeAttribute('disabled');
+  Array.from(document.querySelectorAll('#title-editor, #delete-note')).forEach(
+    function (el) {
+      el.classList.remove('disabled');
+    }
+  );
 }
 
 function debounce(fn, wait, leading = false) {
-  var timeout;
+  let timeout;
 
-  return function(...args) {
+  return function (...args) {
     function later() {
       timeout = null;
       if (!leading) fn(...args);
     }
 
-    var callNow = leading && !timeout;
+    const callNow = leading && !timeout;
     clearTimeout(timeout);
     timeout = setTimeout(later, wait);
     if (callNow) fn(...args);
